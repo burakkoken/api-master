@@ -31,7 +31,7 @@ func newRequest(client *Client, method string, rawUrl string) *Request {
 	}
 
 	var request *http.Request
-	request, err = http.NewRequest(method, parsedUrl.RequestURI(), nil)
+	request, err = http.NewRequest(method, parsedUrl.String(), nil)
 
 	if err != nil {
 		panic(err)

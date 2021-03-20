@@ -3,13 +3,17 @@ package apimaster
 import (
 	"net/http"
 	"net/http/cookiejar"
+	"testing"
+	"time"
 )
 
 type Client struct {
+	suite      *Suite
+	testing    *testing.T
 	httpClient *http.Client
 }
 
-func NewClient() *Client {
+func newClient() *Client {
 	cookieJar, err := cookiejar.New(nil)
 
 	if err != nil {
@@ -17,10 +21,30 @@ func NewClient() *Client {
 	}
 
 	return &Client{
-		&http.Client{
+		httpClient: &http.Client{
 			Jar: cookieJar,
 		},
 	}
+}
+
+func NewClient(t *testing.T) *Client {
+	if t == nil {
+		panic("t must not be nil")
+	}
+
+	client := newClient()
+	client.testing = t
+	return client
+}
+
+func NewClientWithSuite(suite *Suite) *Client {
+	if suite == nil {
+		panic("suite must not be nil")
+	}
+
+	client := newClient()
+	client.suite = suite
+	return client
 }
 
 func (client *Client) GET(url string) *Request {
@@ -60,5 +84,13 @@ func (client *Client) CONNECT(url string) *Request {
 }
 
 func (client *Client) makeRequest(request *Request) *Response {
-	return nil
+	startTime := time.Now()
+	response, err := client.httpClient.Do(request.httpRequest)
+
+	if err != nil {
+		// TODO
+	}
+
+	elapsedTime := time.Since(startTime)
+	return newResponse(client, response, elapsedTime)
 }
