@@ -1,6 +1,7 @@
 package apimaster
 
 import (
+	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/cookiejar"
 	"testing"
@@ -8,7 +9,6 @@ import (
 )
 
 type Client struct {
-	suite      *Suite
 	testing    *testing.T
 	httpClient *http.Client
 }
@@ -34,16 +34,6 @@ func NewClient(t *testing.T) *Client {
 
 	client := newClient()
 	client.testing = t
-	return client
-}
-
-func NewClientWithSuite(suite *Suite) *Client {
-	if suite == nil {
-		panic("suite must not be nil")
-	}
-
-	client := newClient()
-	client.suite = suite
 	return client
 }
 
@@ -88,7 +78,7 @@ func (client *Client) makeRequest(request *Request) *Response {
 	response, err := client.httpClient.Do(request.httpRequest)
 
 	if err != nil {
-		// TODO
+		assert.NoError(client.testing, err, "request failed!")
 	}
 
 	elapsedTime := time.Since(startTime)

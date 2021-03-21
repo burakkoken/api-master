@@ -2,7 +2,6 @@ package apimaster
 
 import (
 	"github.com/stretchr/testify/assert"
-	"reflect"
 )
 
 type Expect func(chain *ExpectChain, response *Response)
@@ -12,6 +11,7 @@ type ExpectFunction string
 const (
 	ExpectFunctionGet            ExpectFunction = "Get"
 	ExpectFunctionEqual          ExpectFunction = "Equal"
+	ExpectFunctionNotEqual       ExpectFunction = "NotEqual"
 	ExpectFunctionGreater        ExpectFunction = "Greater"
 	ExpectFunctionGreaterOrEqual ExpectFunction = "GreaterOrEqual"
 	ExpectFunctionLess           ExpectFunction = "Less"
@@ -21,11 +21,23 @@ const (
 	ExpectFunctionNil            ExpectFunction = "Nil"
 	ExpectFunctionNotNil         ExpectFunction = "NotNil"
 	ExpectFunctionLen            ExpectFunction = "Len"
+	ExpectFunctionContains       ExpectFunction = "Contains"
+	ExpectFunctionBind           ExpectFunction = "Bind"
+	ExpectFunctionIsValid        ExpectFunction = "IsValid"
 )
 
 type ExpectChain struct {
+	name     string
 	value    interface{}
 	callback func(fun ExpectFunction, chain *ExpectChain, value interface{})
+}
+
+func newExpectChain(name string, value interface{}, callback func(fun ExpectFunction, chain *ExpectChain, value interface{})) *ExpectChain {
+	return &ExpectChain{
+		name,
+		value,
+		callback,
+	}
 }
 
 func Get(value ...interface{}) Expect {
@@ -42,11 +54,17 @@ func Equal(value interface{}) Expect {
 			chain.callback(ExpectFunctionEqual, chain, value)
 		}
 
-		if response.client.suite != nil {
-			response.client.suite.Equal(value, chain.value)
-		} else {
-			assert.Equal(response.client.testing, chain.value, value)
+		assert.Equal(response.client.testing, value, chain.value)
+	}
+}
+
+func NotEqual(value interface{}) Expect {
+	return func(chain *ExpectChain, response *Response) {
+		if chain.callback != nil {
+			chain.callback(ExpectFunctionNotEqual, chain, value)
 		}
+
+		assert.NotEqual(response.client.testing, value, chain.value)
 	}
 }
 
@@ -56,11 +74,7 @@ func Greater(value interface{}) Expect {
 			chain.callback(ExpectFunctionGreater, chain, value)
 		}
 
-		if response.client.suite != nil {
-			response.client.suite.Greater(value, chain.value)
-		} else {
-			assert.Greater(response.client.testing, chain.value, value)
-		}
+		assert.Greater(response.client.testing, chain.value, value)
 	}
 }
 
@@ -70,11 +84,7 @@ func GreaterOrEqual(value interface{}) Expect {
 			chain.callback(ExpectFunctionGreaterOrEqual, chain, value)
 		}
 
-		if response.client.suite != nil {
-			response.client.suite.GreaterOrEqual(value, chain.value)
-		} else {
-			assert.GreaterOrEqual(response.client.testing, chain.value, value)
-		}
+		assert.GreaterOrEqual(response.client.testing, chain.value, value)
 	}
 }
 
@@ -84,11 +94,7 @@ func Less(value interface{}) Expect {
 			chain.callback(ExpectFunctionLess, chain, value)
 		}
 
-		if response.client.suite != nil {
-			response.client.suite.Less(value, chain.value)
-		} else {
-			assert.Less(response.client.testing, chain.value, value)
-		}
+		assert.Less(response.client.testing, chain.value, value)
 	}
 }
 
@@ -98,11 +104,7 @@ func LessOrEqual(value interface{}) Expect {
 			chain.callback(ExpectFunctionLessOrEqual, chain, value)
 		}
 
-		if response.client.suite != nil {
-			response.client.suite.LessOrEqual(value, chain.value)
-		} else {
-			assert.LessOrEqual(response.client.testing, chain.value, value)
-		}
+		assert.LessOrEqual(response.client.testing, chain.value, value)
 	}
 }
 
@@ -112,11 +114,7 @@ func Empty() Expect {
 			chain.callback(ExpectFunctionEmpty, chain, nil)
 		}
 
-		if response.client.suite != nil {
-			response.client.suite.Empty(chain.value)
-		} else {
-			assert.Empty(response.client.testing, chain.value)
-		}
+		assert.Empty(response.client.testing, chain.value)
 	}
 }
 
@@ -126,11 +124,7 @@ func NotEmpty() Expect {
 			chain.callback(ExpectFunctionNotEmpty, chain, nil)
 		}
 
-		if response.client.suite != nil {
-			response.client.suite.NotEmpty(chain.value)
-		} else {
-			assert.NotEmpty(response.client.testing, chain.value)
-		}
+		assert.NotEmpty(response.client.testing, chain.value)
 	}
 }
 
@@ -140,11 +134,7 @@ func Nil() Expect {
 			chain.callback(ExpectFunctionNil, chain, nil)
 		}
 
-		if response.client.suite != nil {
-			response.client.suite.Nil(chain.value)
-		} else {
-			assert.Nil(response.client.testing, chain.value)
-		}
+		assert.Nil(response.client.testing, chain.value)
 	}
 }
 
@@ -154,30 +144,42 @@ func NotNil() Expect {
 			chain.callback(ExpectFunctionNotNil, chain, nil)
 		}
 
-		if response.client.suite != nil {
-			response.client.suite.NotNil(chain.value)
-		} else {
-			assert.NotNil(response.client.testing, chain.value)
-		}
+		assert.NotNil(response.client.testing, chain.value)
 	}
 }
 
-func Len() Expect {
+func Len(length int) Expect {
 	return func(chain *ExpectChain, response *Response) {
 		if chain.callback != nil {
 			chain.callback(ExpectFunctionLen, chain, nil)
 		}
 
-		v := reflect.ValueOf(chain.value)
-		switch v.Kind() {
-		case reflect.String:
-			chain.value = len(v.String())
-		case reflect.Array:
-		case reflect.Slice:
-		case reflect.Map:
-			chain.value = v.Len()
-		default:
-			panic("unsupported type")
+		assert.Len(response.client.testing, chain.value, length)
+	}
+}
+
+func Contains(value interface{}) Expect {
+	return func(chain *ExpectChain, response *Response) {
+		if chain.callback != nil {
+			chain.callback(ExpectFunctionContains, chain, nil)
+		}
+
+		assert.Contains(response.client.testing, chain.value, value)
+	}
+}
+
+func Bind(instance interface{}) Expect {
+	return func(chain *ExpectChain, response *Response) {
+		if chain.callback != nil {
+			chain.callback(ExpectFunctionBind, chain, instance)
+		}
+	}
+}
+
+func IsValid() Expect {
+	return func(chain *ExpectChain, response *Response) {
+		if chain.callback != nil {
+			chain.callback(ExpectFunctionIsValid, chain, nil)
 		}
 	}
 }
