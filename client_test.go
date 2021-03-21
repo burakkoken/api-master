@@ -16,11 +16,13 @@ func NewTestServer(handler http.Handler) *httptest.Server {
 
 type ExampleTestSuite struct {
 	suite.Suite
-	client *Client
+	client      *Client
+	environment *Environment
 }
 
 func (suite *ExampleTestSuite) SetupSuite() {
 	suite.client = NewClient(suite.T())
+	suite.environment = GetEnvironment()
 }
 
 type HttpBinGetResponse struct {
@@ -57,7 +59,7 @@ func (suite *ExampleTestSuite) TestExample() {
 		body.Text(&str),
 	)
 
-	query.JsonQuery().Get("headers").NotEmpty()
+	query.JsonQuery().Get("headers").NotEmpty().Contains("Content-Type")
 	query.JsonQuery().Get("headers").String()
 
 	testServer.Close()
