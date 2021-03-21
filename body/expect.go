@@ -49,7 +49,7 @@ func Json(value interface{}) Expect {
 			chain.Next(chain.GetValue())
 		}
 
-		chain.GetContext().Put(ContextKeyBoundInstance, value)
+		chain.GetChainContext().Put(ContextKeyBoundInstance, value)
 	}
 }
 
@@ -77,7 +77,7 @@ func Xml(value interface{}) Expect {
 			chain.Next(chain.GetValue())
 		}
 
-		chain.GetContext().Put(ContextKeyBoundInstance, value)
+		chain.GetChainContext().Put(ContextKeyBoundInstance, value)
 	}
 }
 
@@ -92,7 +92,7 @@ func Text(value *string) Expect {
 		}
 
 		chain.Next(*value)
-		chain.GetContext().Put(ContextKeyBoundInstance, *value)
+		chain.GetChainContext().Put(ContextKeyBoundInstance, *value)
 	}
 }
 
@@ -162,7 +162,7 @@ func NotEqual(value string) Expect {
 
 func IsValid() Expect {
 	return func(t *testing.T, chain *expect.Chain, response *http.Response) {
-		boundInstance := chain.GetContext().Get(ContextKeyBoundInstance)
+		boundInstance := chain.GetChainContext().Get(ContextKeyBoundInstance)
 
 		switch boundInstance.(type) {
 		case string:

@@ -1,6 +1,7 @@
 package apimaster
 
 import (
+	"github.com/burakkoken/api-master/context"
 	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/cookiejar"
@@ -10,6 +11,7 @@ import (
 
 type Client struct {
 	testing    *testing.T
+	ctx        *context.Context
 	httpClient *http.Client
 }
 
@@ -26,6 +28,7 @@ func NewClient(t *testing.T) *Client {
 
 	return &Client{
 		testing: t,
+		ctx:     context.NewContext(),
 		httpClient: &http.Client{
 			Jar: cookieJar,
 		},
@@ -66,6 +69,10 @@ func (client *Client) HEAD(url string) *Request {
 
 func (client *Client) CONNECT(url string) *Request {
 	return newRequest(client, http.MethodConnect, url)
+}
+
+func (client *Client) GetContext() *context.Context {
+	return client.ctx
 }
 
 func (client *Client) makeRequest(request *Request) *Response {

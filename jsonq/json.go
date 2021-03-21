@@ -2,6 +2,7 @@ package jsonq
 
 import (
 	"encoding/json"
+	"github.com/burakkoken/api-master/context"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -10,9 +11,10 @@ import "github.com/tidwall/gjson"
 type JsonQuery struct {
 	json string
 	t    *testing.T
+	ctx  *context.Context
 }
 
-func NewJsonQuery(t *testing.T, data []byte) *JsonQuery {
+func NewJsonQuery(t *testing.T, ctx *context.Context, data []byte) *JsonQuery {
 	var jsonMap map[string]interface{}
 	err := json.Unmarshal(data, &jsonMap)
 
@@ -25,6 +27,7 @@ func NewJsonQuery(t *testing.T, data []byte) *JsonQuery {
 	return &JsonQuery{
 		string(sanitizedData),
 		t,
+		ctx,
 	}
 }
 
@@ -68,11 +71,33 @@ func (query *JsonQuery) Len(length int) *JsonQuery {
 	return query
 }
 
+func (query *JsonQuery) Contains(value interface{}) *JsonQuery {
+	assert.NotEmpty(query.t, query.json, "Json object must not be empty")
+
+	var jsonMap map[string]interface{}
+	err := json.Unmarshal([]byte(query.json), &jsonMap)
+
+	if err != nil {
+		panic("Invalid json : " + err.Error())
+	}
+
+	assert.Contains(query.t, jsonMap, value)
+	return query
+}
+
 func (query *JsonQuery) Bind(value interface{}) *JsonQuery {
 	err := json.Unmarshal([]byte(query.json), value)
 
 	if err != nil {
 		assert.NoError(query.t, err)
+	}
+
+	return query
+}
+
+func (query *JsonQuery) PutContext(contextKey string) *JsonQuery {
+	if query.ctx != nil {
+		query.ctx.Put(contextKey, query.json)
 	}
 
 	return query

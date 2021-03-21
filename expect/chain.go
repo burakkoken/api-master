@@ -1,13 +1,15 @@
 package expect
 
+import "github.com/burakkoken/api-master/context"
+
 type Chain struct {
-	value interface{}
-	ctx   *Context
+	value        interface{}
+	chainContext *context.Context
 }
 
 func NewChain() *Chain {
 	return &Chain{
-		ctx: newContext(),
+		chainContext: context.NewContext(),
 	}
 }
 
@@ -20,6 +22,6 @@ func (chain *Chain) GetValue() interface{} {
 	return chain.value
 }
 
-func (chain *Chain) GetContext() *Context {
-	return chain.ctx
+func (chain *Chain) GetChainContext() *context.Context {
+	return chain.chainContext
 }

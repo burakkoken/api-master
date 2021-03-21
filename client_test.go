@@ -3,6 +3,8 @@ package apimaster
 import (
 	"github.com/burakkoken/api-master/body"
 	"github.com/burakkoken/api-master/clength"
+	"github.com/burakkoken/api-master/header"
+	"github.com/burakkoken/api-master/headers"
 	"github.com/burakkoken/api-master/status"
 	"github.com/stretchr/testify/suite"
 	"net/http"
@@ -34,6 +36,8 @@ type User struct {
 }
 
 func (suite *ExampleTestSuite) TestExample() {
+	suite.environment.GetString("")
+
 	testServer := NewTestServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		rw.WriteHeader(200)
 	}))
@@ -41,9 +45,21 @@ func (suite *ExampleTestSuite) TestExample() {
 	responseValue := &HttpBinGetResponse{}
 	responseValue2 := &HttpBinGetResponse{}
 
-	response := suite.client.POST("http://httpbin.org/post").WithJson(&User{Name: "TEST"}).Expect()
+	response := suite.client.POST("http://httpbin.org/post").
+		WithJson(&User{Name: "TEST"}).
+		Expect()
+
 	response.Status(
 		status.Equal(200),
+	)
+
+	response.Header(
+		header.Get("Content-Type"),
+		header.PutContext("contentType"),
+	)
+
+	response.Headers(
+		headers.PutContext("Headers"),
 	)
 
 	response.ContentLength(
@@ -59,8 +75,17 @@ func (suite *ExampleTestSuite) TestExample() {
 		body.Text(&str),
 	)
 
-	query.JsonQuery().Get("headers").NotEmpty().Contains("Content-Type")
+	query.JsonQuery().Get("headers").
+		NotEmpty().
+		PutContext("Response_Headers")
+
 	query.JsonQuery().Get("headers").String()
+
+	ctx := suite.client.GetContext()
+
+	if ctx != nil {
+
+	}
 
 	testServer.Close()
 }

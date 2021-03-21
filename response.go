@@ -3,6 +3,7 @@ package apimaster
 import (
 	"github.com/burakkoken/api-master/body"
 	"github.com/burakkoken/api-master/clength"
+	"github.com/burakkoken/api-master/context"
 	"github.com/burakkoken/api-master/ctype"
 	"github.com/burakkoken/api-master/duration"
 	"github.com/burakkoken/api-master/expect"
@@ -51,15 +52,17 @@ func (r *Response) Header(expects ...header.Expect) *Response {
 	chain := expect.NewChain()
 
 	for _, expectFunc := range expects {
-		expectFunc(r.client.testing, chain, r.httpResponse)
+		expectFunc(r.client.testing, r.client.GetContext(), chain, r.httpResponse)
 	}
 
 	return r
 }
 
 func (r *Response) Headers(expects ...headers.Expect) *Response {
+	chain := expect.NewChain()
+
 	for _, expectFunc := range expects {
-		expectFunc(r.client.testing, nil, r.httpResponse)
+		expectFunc(r.client.testing, r.client.GetContext(), chain, r.httpResponse)
 	}
 
 	return r
@@ -88,13 +91,13 @@ func (r *Response) Body(expects ...body.Expect) *ResponseQuery {
 	assert.NoError(r.client.testing, err)
 
 	chain := expect.NewChain().Next(bytes)
-	chain.GetContext().Put(body.ContextKeyBody, bytes)
+	chain.GetChainContext().Put(body.ContextKeyBody, bytes)
 
 	for _, expectFunc := range expects {
 		expectFunc(r.client.testing, chain, r.httpResponse)
 	}
 
-	return newResponseQuery(r.client.testing, bytes)
+	return newResponseQuery(r.client.testing, r.client.GetContext(), bytes)
 }
 
 func (r *Response) Raw() *http.Response {
@@ -104,15 +107,17 @@ func (r *Response) Raw() *http.Response {
 type ResponseQuery struct {
 	body []byte
 	t    *testing.T
+	ctx  *context.Context
 }
 
-func newResponseQuery(t *testing.T, body []byte) *ResponseQuery {
+func newResponseQuery(t *testing.T, ctx *context.Context, body []byte) *ResponseQuery {
 	return &ResponseQuery{
 		body,
 		t,
+		ctx,
 	}
 }
 
 func (responseQuery *ResponseQuery) JsonQuery() *jsonq.JsonQuery {
-	return jsonq.NewJsonQuery(responseQuery.t, responseQuery.body)
+	return jsonq.NewJsonQuery(responseQuery.t, responseQuery.ctx, responseQuery.body)
 }

@@ -1,10 +1,10 @@
-package expect
+package context
 
 type Context struct {
 	values map[string]interface{}
 }
 
-func newContext() *Context {
+func NewContext() *Context {
 	return &Context{
 		make(map[string]interface{}),
 	}
@@ -21,5 +21,10 @@ func (ctx *Context) Put(key string, value interface{}) *Context {
 
 func (ctx *Context) Delete(key string) *Context {
 	delete(ctx.values, key)
+	return ctx
+}
+
+func (ctx *Context) Clear() *Context {
+	ctx.values = make(map[string]interface{})
 	return ctx
 }
