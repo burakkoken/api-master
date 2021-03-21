@@ -8,10 +8,12 @@ import (
 	"github.com/burakkoken/api-master/expect"
 	"github.com/burakkoken/api-master/header"
 	"github.com/burakkoken/api-master/headers"
+	"github.com/burakkoken/api-master/query"
 	"github.com/burakkoken/api-master/status"
 	"github.com/stretchr/testify/assert"
 	"io/ioutil"
 	"net/http"
+	"testing"
 	"time"
 )
 
@@ -79,7 +81,7 @@ func (r *Response) ContentLength(expects ...clength.Expect) *Response {
 	return r
 }
 
-func (r *Response) Body(expects ...body.Expect) *Response {
+func (r *Response) Body(expects ...body.Expect) *ResponseQuery {
 
 	defer r.httpResponse.Body.Close()
 	bytes, err := ioutil.ReadAll(r.httpResponse.Body)
@@ -92,9 +94,25 @@ func (r *Response) Body(expects ...body.Expect) *Response {
 		expectFunc(r.client.testing, chain, r.httpResponse)
 	}
 
-	return r
+	return newResponseQuery(r.client.testing, bytes)
 }
 
 func (r *Response) Raw() *http.Response {
 	return r.httpResponse
+}
+
+type ResponseQuery struct {
+	body []byte
+	t    *testing.T
+}
+
+func newResponseQuery(t *testing.T, body []byte) *ResponseQuery {
+	return &ResponseQuery{
+		body,
+		t,
+	}
+}
+
+func (responseQuery *ResponseQuery) JsonQuery() *query.JsonQuery {
+	return query.NewJsonQuery(responseQuery.t, responseQuery.body)
 }
