@@ -8,7 +8,7 @@ import (
 	"github.com/burakkoken/api-master/expect"
 	"github.com/burakkoken/api-master/header"
 	"github.com/burakkoken/api-master/headers"
-	"github.com/burakkoken/api-master/query"
+	"github.com/burakkoken/api-master/jsonq"
 	"github.com/burakkoken/api-master/status"
 	"github.com/stretchr/testify/assert"
 	"io/ioutil"
@@ -113,6 +113,6 @@ func newResponseQuery(t *testing.T, body []byte) *ResponseQuery {
 	}
 }
 
-func (responseQuery *ResponseQuery) JsonQuery() *query.JsonQuery {
-	return query.NewJsonQuery(responseQuery.t, responseQuery.body)
+func (responseQuery *ResponseQuery) JsonQuery() *jsonq.JsonQuery {
+	return jsonq.NewJsonQuery(responseQuery.t, responseQuery.body)
 }

@@ -1,4 +1,4 @@
-package query
+package jsonq
 
 import (
 	"encoding/json"
