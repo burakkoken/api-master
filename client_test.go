@@ -1,11 +1,16 @@
 package apimaster
 
 import (
+	"github.com/burakkoken/api-master/body"
+	"github.com/burakkoken/api-master/clength"
+	"github.com/burakkoken/api-master/ctype"
+	"github.com/burakkoken/api-master/header"
+	"github.com/burakkoken/api-master/headers"
+	"github.com/burakkoken/api-master/status"
 	"github.com/stretchr/testify/suite"
 	"net/http"
 	"net/http/httptest"
 	"testing"
-	"time"
 )
 
 func NewTestServer(handler http.Handler) *httptest.Server {
@@ -25,28 +30,46 @@ type HttpBinGetResponse struct {
 	Headers map[string]string `json:"headers" xml:"headers" validate:"required"`
 }
 
+type User struct {
+	Name string `json:"name" xml:"name"`
+}
+
 func (suite *ExampleTestSuite) TestExample() {
 	testServer := NewTestServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		rw.WriteHeader(200)
 	}))
 
 	responseValue := &HttpBinGetResponse{}
+	responseValue2 := &HttpBinGetResponse{}
 
-	response := suite.client.GET("http://httpbin.org/get").Expect()
-	response.Status(Equal(200))
-	response.ElapsedTime(LessOrEqual(time.Millisecond * 500))
+	response := suite.client.POST("http://httpbin.org/post").WithJson(&User{Name: "TEST"}).Expect()
+	response.Status(
+		status.Equal(200),
+	)
+
 	response.Header(
-		Get("Content-Type"), NotEmpty(), Equal("application/json"),
+		header.Get("Content-Type"),
+		header.NotEmpty(),
+		header.Equal("application/json"),
 	)
-	response.Headers(Contains("Content-Type"))
+	response.Headers(
+		headers.Contains("Content-Type"),
+	)
 	response.ContentType(
-		NotEmpty(), Equal("application/json"),
+		ctype.NotEmpty(), ctype.Equal("application/json"),
 	)
-	response.ContentLength(NotEqual(200))
+	response.ContentLength(
+		clength.NotEqual(200),
+	)
+	var str string
 	response.Body(
-		NotNil(),
-		Bind(responseValue),
-		IsValid(),
+		body.NotNil(),
+		body.NotEmpty(),
+		body.Equal("test"),
+		body.Json(responseValue),
+		body.Json(responseValue2),
+		body.IsValid(),
+		body.Text(&str),
 	)
 
 	testServer.Close()

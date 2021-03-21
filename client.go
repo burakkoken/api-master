@@ -13,7 +13,11 @@ type Client struct {
 	httpClient *http.Client
 }
 
-func newClient() *Client {
+func NewClient(t *testing.T) *Client {
+	if t == nil {
+		panic("t must not be nil")
+	}
+
 	cookieJar, err := cookiejar.New(nil)
 
 	if err != nil {
@@ -21,20 +25,11 @@ func newClient() *Client {
 	}
 
 	return &Client{
+		testing: t,
 		httpClient: &http.Client{
 			Jar: cookieJar,
 		},
 	}
-}
-
-func NewClient(t *testing.T) *Client {
-	if t == nil {
-		panic("t must not be nil")
-	}
-
-	client := newClient()
-	client.testing = t
-	return client
 }
 
 func (client *Client) GET(url string) *Request {
