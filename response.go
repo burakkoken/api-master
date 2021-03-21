@@ -11,6 +11,7 @@ import (
 	"github.com/burakkoken/api-master/headers"
 	"github.com/burakkoken/api-master/jsonq"
 	"github.com/burakkoken/api-master/status"
+	"github.com/burakkoken/api-master/stringq"
 	"github.com/stretchr/testify/assert"
 	"io/ioutil"
 	"net/http"
@@ -120,4 +121,8 @@ func newResponseQuery(t *testing.T, ctx *context.Context, body []byte) *Response
 
 func (responseQuery *ResponseQuery) JsonQuery() *jsonq.JsonQuery {
 	return jsonq.NewJsonQuery(responseQuery.t, responseQuery.ctx, responseQuery.body)
+}
+
+func (responseQuery *ResponseQuery) StringQuery() *stringq.StringQuery {
+	return stringq.NewStringQuery(responseQuery.t, responseQuery.ctx, responseQuery.body)
 }

@@ -53,7 +53,7 @@ func (query *JsonQuery) Equal(value interface{}) *JsonQuery {
 }
 
 func (query *JsonQuery) NotEqual(value interface{}) *JsonQuery {
-	assert.NotEqual(query.t, query.toJsonString(value), value)
+	assert.NotEqual(query.t, query.toJsonString(value), query.json)
 	return query
 }
 

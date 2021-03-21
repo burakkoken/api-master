@@ -87,6 +87,8 @@ func (suite *ExampleTestSuite) TestExample() {
 
 	}
 
+	query.StringQuery().Contains("Headers")
+
 	testServer.Close()
 }
 
