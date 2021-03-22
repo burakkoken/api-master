@@ -5,6 +5,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/cookiejar"
+	"net/url"
 	"testing"
 	"time"
 )
@@ -73,6 +74,10 @@ func (client *Client) CONNECT(url string) *Request {
 
 func (client *Client) GetContext() *context.Context {
 	return client.ctx
+}
+
+func (client *Client) GetCookies(u *url.URL) []*http.Cookie {
+	return client.httpClient.Jar.Cookies(u)
 }
 
 func (client *Client) makeRequest(request *Request) *Response {

@@ -3,6 +3,7 @@ package stringq
 import (
 	"github.com/burakkoken/api-master/context"
 	"github.com/stretchr/testify/assert"
+	"regexp"
 	"testing"
 )
 
@@ -60,4 +61,31 @@ func (query *StringQuery) PutContext(contextKey string) *StringQuery {
 
 func (query *StringQuery) String() string {
 	return query.data
+}
+
+func (query *StringQuery) Match(expression string) *Match {
+	regex := regexp.MustCompile(expression)
+	matches := regex.FindStringSubmatch(query.data)
+
+	if matches == nil {
+		return newMatch(query.t, query.ctx, make([]string, 0), nil)
+	}
+
+	return newMatch(query.t, query.ctx, matches, regex.SubexpNames())
+}
+
+func (query *StringQuery) MatchAll(expression string) []Match {
+	regex := regexp.MustCompile(expression)
+
+	matches := regex.FindAllStringSubmatch(query.data, -1)
+	if matches == nil {
+		return []Match{}
+	}
+
+	result := make([]Match, 0)
+	for _, match := range matches {
+		result = append(result, *newMatch(query.t, query.ctx, match, regex.SubexpNames()))
+	}
+
+	return result
 }

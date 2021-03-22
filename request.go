@@ -108,6 +108,11 @@ func (r *Request) WithXml(object interface{}) *Request {
 	return r
 }
 
+func (r *Request) WithCookie(cookie *http.Cookie) *Request {
+	r.httpRequest.AddCookie(cookie)
+	return r
+}
+
 func (r *Request) Expect() *Response {
 	return r.client.makeRequest(r)
 }
