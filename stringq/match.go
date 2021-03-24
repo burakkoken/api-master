@@ -34,7 +34,7 @@ func (match *Match) Matches() []string {
 }
 
 func (match *Match) Len(length int) *Match {
-	assert.Len(match.t, len(match.matches), length)
+	assert.Len(match.t, match.matches, length)
 	return match
 }
 

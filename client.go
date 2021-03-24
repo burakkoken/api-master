@@ -80,6 +80,18 @@ func (client *Client) GetCookies(u *url.URL) []*http.Cookie {
 	return client.httpClient.Jar.Cookies(u)
 }
 
+func (client *Client) CleanAllCookies() *Client {
+	cookieJar, err := cookiejar.New(nil)
+
+	if err != nil {
+		panic(err)
+	}
+
+	client.httpClient.Jar = cookieJar
+
+	return client
+}
+
 func (client *Client) makeRequest(request *Request) *Response {
 	startTime := time.Now()
 	response, err := client.httpClient.Do(request.httpRequest)

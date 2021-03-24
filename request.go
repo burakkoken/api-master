@@ -43,14 +43,15 @@ func newRequest(client *Client, method string, rawUrl string) *Request {
 	}
 }
 
-func (r *Request) WithRequestParameter(name string, value string) {
+func (r *Request) WithRequestParameter(name string, value string) *Request {
 	queryValues := r.httpRequest.URL.Query()
 	queryValues.Add(name, value)
 	r.httpRequest.URL.RawQuery = queryValues.Encode()
+	return r
 }
 
 func (r *Request) WithPathVariable(name string, value string) *Request {
-	r.httpRequest.URL.Path = strings.ReplaceAll(r.httpRequest.URL.Path, name, value)
+	r.httpRequest.URL.Path = strings.ReplaceAll(r.httpRequest.URL.Path, ":"+name, value)
 	return r
 }
 
@@ -67,6 +68,13 @@ func (r *Request) WithHeaders(headers map[string]string) *Request {
 		}
 
 	}
+	return r
+}
+
+func (r *Request) WithBody(value []byte) *Request {
+	r.httpRequest.Body = ioutil.NopCloser(bytes.NewReader(value))
+	r.httpRequest.ContentLength = int64(len(value))
+
 	return r
 }
 
